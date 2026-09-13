@@ -1,0 +1,356 @@
+{
+  "students": [
+    {
+      "days": {},
+      "duration": 0,
+      "format": "group",
+      "group": "Группа 1 - ЕГЭ",
+      "isExample": false,
+      "name": "Оля",
+      "note": "",
+      "order": 1788702200577,
+      "paidUntil": "",
+      "price": 8000,
+      "source": "Авито",
+      "startDate": "2026-09-09",
+      "status": "unpaid",
+      "telegram": "@ssvilli",
+      "id": "2lvtr1j1vxhqlj450efc"
+    },
+    {
+      "days": {},
+      "duration": 0,
+      "format": "group",
+      "group": "Группа 1 - ЕГЭ",
+      "isExample": false,
+      "name": "Катя",
+      "note": "",
+      "order": 1788702170302,
+      "paidUntil": "2026-10-02",
+      "price": 8000,
+      "source": "Авито",
+      "startDate": "2026-09-09",
+      "status": "unpaid",
+      "telegram": "@katrrixz",
+      "id": "3l7s6zi2qvhe754udycp"
+    },
+    {
+      "days": {},
+      "duration": 0,
+      "format": "group",
+      "group": "Группа 2 - ЕГЭ",
+      "isExample": false,
+      "name": "Дмитрий",
+      "note": "",
+      "order": 1788702251160,
+      "paidUntil": "",
+      "price": 8000,
+      "source": "Профи",
+      "startDate": "2026-09-11",
+      "status": "unpaid",
+      "telegram": "@dizyyyyy",
+      "id": "631thqozezhmxn81d3d6"
+    },
+    {
+      "days": {},
+      "duration": 0,
+      "format": "group",
+      "group": "Группа 2 - ЕГЭ",
+      "isExample": false,
+      "name": "Карина 10 класс",
+      "note": "",
+      "order": 1789115428895,
+      "paidUntil": "2026-09-11",
+      "price": 8000,
+      "source": "Авито",
+      "startDate": "2026-09-11",
+      "telegram": "@bkillb",
+      "id": "8sc9ley5bvjps541oymj"
+    },
+    {
+      "days": {},
+      "duration": 60,
+      "format": "individual",
+      "group": "",
+      "isExample": false,
+      "name": "Саша",
+      "note": "",
+      "order": 1789240732863,
+      "paidUntil": "",
+      "price": 8000,
+      "source": "Авито",
+      "startDate": "",
+      "telegram": "@s_kkisss",
+      "id": "ewmf2swvc9ktt8q5bfs0"
+    },
+    {
+      "days": {
+        "mon": "19:00",
+        "wed": "19:00"
+      },
+      "duration": 60,
+      "format": "individual",
+      "group": "",
+      "isExample": false,
+      "name": "Степан",
+      "note": "",
+      "order": 1788697014021,
+      "paidUntil": "2026-09-09",
+      "price": 24000,
+      "source": "Авито",
+      "startDate": "2026-09-07",
+      "status": "unpaid",
+      "telegram": "@MOTHERFUCKERR3",
+      "id": "g23vtawt6j68ze15h7p8"
+    },
+    {
+      "days": {},
+      "duration": 0,
+      "format": "group",
+      "group": "Группа 1 - ЕГЭ",
+      "isExample": false,
+      "name": "Амелия",
+      "note": "",
+      "order": 1789064327666,
+      "paidUntil": "2026-10-02",
+      "price": 8000,
+      "source": "Скидка другу",
+      "startDate": "2026-09-09",
+      "telegram": "@ameliik_q",
+      "id": "lm73sbwnypbfa4ze8r7j"
+    },
+    {
+      "days": {},
+      "duration": 0,
+      "format": "group",
+      "group": "Группа 2 - ЕГЭ",
+      "isExample": false,
+      "name": "Прохор",
+      "note": "",
+      "order": 1788809546628,
+      "paidUntil": "2026-10-06",
+      "price": 8000,
+      "source": "Авито",
+      "startDate": "2026-09-11",
+      "telegram": "@Prokhor323",
+      "id": "m58dn8i0gomv5p35bb3x"
+    },
+    {
+      "days": {},
+      "duration": 0,
+      "format": "pair",
+      "group": "Пара 1",
+      "isExample": false,
+      "name": "Аня",
+      "note": "",
+      "order": 1789064527073,
+      "paidUntil": "",
+      "price": 16000,
+      "source": "От другого репетитора",
+      "startDate": "2026-09-15",
+      "telegram": "@ANYABbag",
+      "id": "miowamn9jncm44lqpovt"
+    },
+    {
+      "days": {},
+      "duration": 0,
+      "format": "pair",
+      "group": "Пара 1",
+      "isExample": false,
+      "name": "Саша",
+      "note": "",
+      "order": 1789064612433,
+      "paidUntil": "",
+      "price": 16000,
+      "source": "От другого репетитора",
+      "startDate": "2026-09-15",
+      "telegram": "@ssavereq",
+      "id": "mk4cat6rzxaziuw4c1bd"
+    },
+    {
+      "days": {
+        "fri": false,
+        "mon": false,
+        "sat": "19:00",
+        "sun": false,
+        "thu": false,
+        "tue": false,
+        "wed": false
+      },
+      "duration": 90,
+      "format": "individual",
+      "group": "",
+      "isExample": false,
+      "name": "Зоя",
+      "note": "ЕГЭ база",
+      "order": 1788695716869,
+      "paidUntil": "2026-10-03",
+      "price": 18000,
+      "source": "Профи",
+      "startDate": "",
+      "status": "unpaid",
+      "telegram": "@rdnvztk",
+      "time": "19:00",
+      "id": "uq1w0lnzgd0t9muxnzuc"
+    }
+  ],
+  "payments": [
+    {
+      "amount": 6000,
+      "date": "2026-09-07",
+      "isExample": false,
+      "note": "",
+      "period": "7 сентябрь – 9 сентябрь",
+      "span": "week",
+      "studentId": "g23vtawt6j68ze15h7p8",
+      "studentName": "Степан",
+      "id": "ed4u72pwt08yqjyasz0p"
+    },
+    {
+      "amount": 8000,
+      "date": "2026-09-08",
+      "isExample": false,
+      "note": "",
+      "period": "8 сентябрь – 2 октябрь",
+      "span": "month",
+      "studentId": "3l7s6zi2qvhe754udycp",
+      "studentName": "Катя 1 группа",
+      "id": "hxa5c15vfcdalc93fnne"
+    },
+    {
+      "amount": 8000,
+      "date": "2026-09-11",
+      "isExample": false,
+      "note": "",
+      "period": "11 сентябрь – 6 октябрь",
+      "span": "month",
+      "studentId": "m58dn8i0gomv5p35bb3x",
+      "studentName": "Прохор",
+      "id": "jgatprqe5qb0tyg2yq7k"
+    },
+    {
+      "amount": 8000,
+      "date": "2026-09-10",
+      "isExample": false,
+      "note": "",
+      "period": "9 сентябрь – 2 октябрь",
+      "span": "month",
+      "studentId": "lm73sbwnypbfa4ze8r7j",
+      "studentName": "Амелия",
+      "id": "l22b1plygcsv4135vbun"
+    },
+    {
+      "amount": 18000,
+      "date": "2026-09-05",
+      "isExample": false,
+      "note": "",
+      "period": "5 сентябрь – 26 сентябрь",
+      "span": "month",
+      "studentId": "uq1w0lnzgd0t9muxnzuc",
+      "studentName": "Зоя",
+      "id": "on3svhhnqzdz91vz2mv8"
+    },
+    {
+      "amount": 1000,
+      "date": "2026-09-11",
+      "isExample": false,
+      "note": "",
+      "period": "11 сентябрь",
+      "span": "lesson",
+      "studentId": "8sc9ley5bvjps541oymj",
+      "studentName": "Карина 10 класс",
+      "id": "r21dolkkchkn1yi115v1"
+    }
+  ],
+  "groups": [
+    {
+      "days": {
+        "fri": "19:00",
+        "wed": "20:00"
+      },
+      "name": "Группа 1 - ЕГЭ",
+      "note": "ЕГЭ профиль",
+      "id": "gnjft9aydoopm0c2x03w"
+    },
+    {
+      "days": {
+        "fri": "20:00",
+        "tue": "20:00"
+      },
+      "name": "Группа 2 - ЕГЭ",
+      "note": "ЕГЭ профиль",
+      "id": "t9jrcgc9yj64mchda80b"
+    },
+    {
+      "days": {
+        "thu": "18:00",
+        "tue": "18:00"
+      },
+      "kind": "pair",
+      "name": "Пара 1",
+      "note": "ЕГЭ профиль",
+      "id": "x00f6bz4u2gzwusb3nwa"
+    }
+  ],
+  "attendance": {
+    "2lvtr1j1vxhqlj450efc": {
+      "marks": {
+        "2026-09-02": false,
+        "2026-09-09": true,
+        "2026-09-11": true
+      }
+    },
+    "3l7s6zi2qvhe754udycp": {
+      "marks": {
+        "2026-09-02": false,
+        "2026-09-03": false,
+        "2026-09-09": true,
+        "2026-09-11": true
+      }
+    },
+    "631thqozezhmxn81d3d6": {
+      "marks": {
+        "2026-09-02": false,
+        "2026-09-09": false,
+        "2026-09-11": true
+      }
+    },
+    "8sc9ley5bvjps541oymj": {
+      "marks": {
+        "2026-09-11": true
+      }
+    },
+    "ewmf2swvc9ktt8q5bfs0": {
+      "marks": {}
+    },
+    "g23vtawt6j68ze15h7p8": {
+      "marks": {
+        "2026-09-07": true,
+        "2026-09-09": true
+      }
+    },
+    "lm73sbwnypbfa4ze8r7j": {
+      "marks": {
+        "2026-09-09": false,
+        "2026-09-11": false
+      }
+    },
+    "m58dn8i0gomv5p35bb3x": {
+      "marks": {
+        "2026-09-11": true
+      }
+    },
+    "miowamn9jncm44lqpovt": {
+      "marks": {}
+    },
+    "mk4cat6rzxaziuw4c1bd": {
+      "marks": {}
+    },
+    "uq1w0lnzgd0t9muxnzuc": {
+      "marks": {
+        "2026-09-03": false,
+        "2026-09-05": true
+      }
+    }
+  }
+}
