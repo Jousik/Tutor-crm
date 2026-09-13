@@ -861,22 +861,33 @@
     var note = document.getElementById("modeNote");
     note.textContent = "Синхронизировано";
     note.style.color = "";
-    db.collection("students").onSnapshot(function(snap){
+    // A restricted (non-admin) login only ever needs its own cabinet's
+    // records, and Firestore rejects an *unfiltered* collection read
+    // outright for such a login (it can't prove every possible document
+    // in the collection would pass the security rules) — so scope the
+    // query itself to that cabinet's workspaceId rather than relying on
+    // the rules to filter after the fact. The admin keeps the plain,
+    // unfiltered collection so it sees every cabinet at once.
+    function scoped(name){
+      var col = db.collection(name);
+      return state.isAdmin === false ? col.where("workspaceId", "==", state.currentWorkspaceId) : col;
+    }
+    scoped("students").onSnapshot(function(snap){
       state.students = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       state.ready = true;
       renderAll();
     }, showDbError);
-    db.collection("payments").onSnapshot(function(snap){
+    scoped("payments").onSnapshot(function(snap){
       state.payments = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       renderAll();
     }, showDbError);
-    db.collection("attendance").onSnapshot(function(snap){
+    scoped("attendance").onSnapshot(function(snap){
       var att = {};
       snap.docs.forEach(function(d){ att[d.id] = d.data(); });
       state.attendance = att;
       renderAll();
     }, showDbError);
-    db.collection("groups").onSnapshot(function(snap){
+    scoped("groups").onSnapshot(function(snap){
       state.groups = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       renderAll();
     }, showDbError);
@@ -1157,16 +1168,21 @@
     var sel = document.getElementById("wsSelect");
     if(!sel) return;
     var addBtn = document.getElementById("wsAddBtn");
+    var manageBtn = document.getElementById("wsManageBtn");
+    var switchBlock = document.querySelector(".ws-switch");
     // A tutor logged in with a login mapped to one cabinet only ever sees
-    // that one cabinet — no switching, no creating new ones.
+    // that one cabinet — no switching, no creating new ones, and since
+    // there's nothing to switch or rename, the whole "Кабинет" block
+    // (dropdown + gear) is hidden rather than just disabled.
     if(state.isAdmin === false){
-      if(addBtn) addBtn.hidden = true;
-      sel.disabled = true;
+      if(switchBlock) switchBlock.hidden = true;
       var mine = state.workspaces.find(function(w){ return w.id===state.currentWorkspaceId; });
       sel.innerHTML = '<option value="'+state.currentWorkspaceId+'" selected>'+escapeHtml(mine?mine.name:"Мой кабинет")+'</option>';
       return;
     }
+    if(switchBlock) switchBlock.hidden = false;
     if(addBtn) addBtn.hidden = false;
+    if(manageBtn) manageBtn.hidden = false;
     sel.disabled = false;
     // A cabinet remembered from before (via localStorage) might no longer
     // exist — e.g. deleted from another device. Only correct this once the
