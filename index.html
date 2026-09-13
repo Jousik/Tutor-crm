@@ -2262,7 +2262,16 @@
     auth.signInWithEmailAndPassword(email, password).catch(function(err){
       loginSubmitBtn.disabled = false;
       loginSubmitBtn.textContent = "Войти";
-      loginError.textContent = "Не удалось войти: "+(err&&err.message?err.message:"проверьте email и пароль");
+      var code = err && err.code;
+      var friendly = "Неверный email или пароль.";
+      if(code === "auth/too-many-requests"){
+        friendly = "Слишком много попыток входа. Подождите немного и попробуйте снова.";
+      } else if(code === "auth/user-disabled"){
+        friendly = "Этот аккаунт отключён — обратитесь к администратору.";
+      } else if(code === "auth/network-request-failed"){
+        friendly = "Нет соединения с сервером — проверьте интернет и попробуйте снова.";
+      }
+      loginError.textContent = friendly;
       loginError.hidden = false;
     });
   });
