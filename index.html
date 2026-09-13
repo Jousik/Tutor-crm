@@ -617,6 +617,42 @@
     var p = iso.split("-"); if(p.length!==3) return iso;
     return p[2]+"."+p[1]+"."+p[0];
   }
+  // A native <input type="date"> displays in whatever format the browser's
+  // OS locale dictates (MM/DD/YYYY in English-locale browsers, DD.MM.YYYY
+  // in Russian ones) — its underlying value is always ISO regardless, but
+  // that display mismatch is exactly what made "13" land in the month
+  // field. These two converters back a plain text ДД.ММ.ГГГГ input instead,
+  // which looks and behaves identically in every browser.
+  function ruDateToIso(ru){
+    var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec((ru||"").trim());
+    if(!m) return "";
+    var day = m[1], month = m[2], year = m[3];
+    if(Number(month) < 1 || Number(month) > 12) return "";
+    if(Number(day) < 1 || Number(day) > 31) return "";
+    return year+"-"+month+"-"+day;
+  }
+  function isoToRuDate(iso){
+    if(!iso) return "";
+    var p = iso.split("-"); if(p.length!==3) return "";
+    return p[2]+"."+p[1]+"."+p[0];
+  }
+  function formatDateTyping(raw){
+    var digits = raw.replace(/[^0-9]/g, "").slice(0, 8);
+    if(digits.length <= 2) return digits;
+    if(digits.length <= 4) return digits.slice(0,2)+"."+digits.slice(2);
+    return digits.slice(0,2)+"."+digits.slice(2,4)+"."+digits.slice(4);
+  }
+  function wireDateInput(input){
+    if(!input || input.dataset.dateWired) return;
+    input.dataset.dateWired = "1";
+    input.addEventListener("input", function(){
+      var pos = input.selectionStart;
+      var before = input.value.length;
+      input.value = formatDateTyping(input.value);
+      var after = input.value.length;
+      if(pos != null) input.setSelectionRange(pos + (after-before), pos + (after-before));
+    });
+  }
   function fmtDateRu(d){ return d ? (d.getDate()+" "+MONTHS_RU[d.getMonth()].toLowerCase()) : "—"; }
   var MONTHS_RU_GEN = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
   // Genitive month form — for phrases like "до 1 октября" where fmtDateRu's
@@ -1837,7 +1873,7 @@
         '</div>'
       )+
       '<div class="field"><label>Абонемент, ₽/мес</label><input id="f_price" type="number" min="0" value="'+(s?s.price:(!isDefaultWs()?12800:""))+'" placeholder="6000"></div>'+
-      '<div class="field"><label>Дата начала занятий</label><input id="f_startdate" type="date" value="'+(s?(s.startDate||""):"")+'">'+
+      '<div class="field"><label>Дата начала занятий</label><input id="f_startdate" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="13.09.2026" value="'+(s?isoToRuDate(s.startDate||""):"")+'">'+
         '<div class="hint">От неё считается первая оплата (и просрочка, если ещё ни разу не платил) — если не заполнить, первая оплата привяжется к дате внесения платежа</div>'+
       '</div>'+
       // "Оплачено до" isn't editable from this form at all anymore — it's
@@ -1848,6 +1884,7 @@
       onDelete: s ? function(){ deleteStudent(s.id); } : null,
       wire: function(container){
         wireDayPick(container);
+        wireDateInput(container.querySelector("#f_startdate"));
         if(simple) return; // no format picker to wire up in this mode
         var seg = container.querySelector("#f_format");
         var unitWrap = container.querySelector("#f_unit_wrap");
@@ -1929,7 +1966,7 @@
           days: unit ? {} : readDayPick(modalBody),
           duration: unit ? 0 : (Number(modalBody.querySelector("#f_duration").value)||60),
           price: Number(modalBody.querySelector("#f_price").value)||0,
-          startDate: modalBody.querySelector("#f_startdate").value,
+          startDate: ruDateToIso(modalBody.querySelector("#f_startdate").value),
           note: modalBody.querySelector("#f_note").value.trim()
         };
         // "Откуда пришёл" isn't in the form for extra cabinets — leave it out
@@ -1950,7 +1987,7 @@
     var body =
       '<div class="field"><label>Ученик</label><select id="p_student">'+opts+'</select></div>'+
       '<div class="row2">'+
-        '<div class="field"><label>Дата</label><input id="p_date" type="date" value="'+todayISO()+'"></div>'+
+        '<div class="field"><label>Дата</label><input id="p_date" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="13.09.2026" value="'+isoToRuDate(todayISO())+'"></div>'+
         '<div class="field"><label>Сумма, ₽</label><input id="p_amount" type="number" min="0" value="'+(preset?preset.price:"")+'"></div>'+
       '</div>'+
       // Extra cabinets only bill by month or by 2 weeks — no per-week or
@@ -1972,6 +2009,7 @@
       wire: function(container){
         var studentSelect = container.querySelector("#p_student");
         var dateInput = container.querySelector("#p_date");
+        wireDateInput(dateInput);
         var amountInput = container.querySelector("#p_amount");
         var seg = container.querySelector("#p_span");
         var periodInput = container.querySelector("#p_period");
@@ -1986,7 +2024,7 @@
         function updatePreview(){
           var student = state.students.find(function(s){ return s.id===studentSelect.value; });
           if(!student){ previewEl.textContent = "—"; hintEl.textContent = ""; return; }
-          var dateVal = dateInput.value || todayISO();
+          var dateVal = ruDateToIso(dateInput.value) || todayISO();
           var span = currentSpan();
           var startD = billingStart(student, dateVal);
           var untilISO = computePaidUntil(student, dateVal, span);
@@ -2028,7 +2066,7 @@
         var studentId = modalBody.querySelector("#p_student").value;
         var student = state.students.find(function(s){return s.id===studentId;});
         var span = modalBody.querySelector("#p_span .active").dataset.v;
-        var dateVal = modalBody.querySelector("#p_date").value || todayISO();
+        var dateVal = ruDateToIso(modalBody.querySelector("#p_date").value) || todayISO();
         var data = {
           studentId: studentId,
           studentName: student?student.name:"—",
