@@ -1736,7 +1736,7 @@
       var t = (typeof days[k]==="string") ? days[k] : "";
       return '<div class="dayrow" data-day="'+k+'">'+
         '<button type="button" class="daytoggle'+(on?" active":"")+'" data-day="'+k+'">'+DAY_LABEL[k]+'</button>'+
-        '<input type="time" class="daytime" value="'+escapeHtml(t)+'" '+(on?"":"disabled")+' '+(on?"required":"")+'>'+
+        '<input type="time" lang="ru" class="daytime" value="'+escapeHtml(t)+'" '+(on?"":"disabled")+' '+(on?"required":"")+'>'+
       '</div>';
     }).join("")+'</div>';
   }
