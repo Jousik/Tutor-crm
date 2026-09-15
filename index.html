@@ -175,6 +175,7 @@
   .pill.bad{ background:var(--bad-soft); color:var(--bad); }
   .pill.neutral{ background:var(--surface-2); color:var(--muted); }
   .example-tag{ font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border:1px solid var(--border); border-radius:5px; padding:1px 5px; }
+  .paiduntil{ margin-top:4px; font-size:12px; color:var(--muted); }
 
   /* ---------- Students ---------- */
   .band{
@@ -461,6 +462,11 @@
       <div class="panel" style="margin-top:18px;" id="hourlyRatePanel">
         <h3>Стоимость часа</h3>
         <div id="hourlyRateList"></div>
+      </div>
+
+      <div class="panel" style="margin-top:18px;" id="tutorIncomePanel" hidden>
+        <h3>Доход от репетиторов <span class="pill good" id="tutorIncomeTotal" style="margin-left:6px;"></span></h3>
+        <div id="tutorIncomeList"></div>
       </div>
 
       <div class="panel" style="margin-top:18px;">
@@ -822,6 +828,62 @@
     if(!until) return Number(student.price)||0;
     var n = lessonsInRange(effectiveDays(student), start, until);
     return Math.round(perLesson * n);
+  }
+  // ---- tutor payout split (extra cabinets only) ----
+  // Same billing math as above (computePaidUntil/lessonsInRange), but scoped
+  // to an arbitrary cabinet rather than whichever one is currently selected
+  // — needed so the admin's own dashboard can total up every tutor's cabinet
+  // at once instead of only the one currently open.
+  function wsGroupByName(workspaceId, name){
+    return state.groups.filter(function(g){ return wsOf(g)===workspaceId; }).find(function(g){ return g.name===name; });
+  }
+  function wsEffectiveDays(workspaceId, s){
+    if(isUnitFormat(s) && s.group){
+      var g = wsGroupByName(workspaceId, s.group);
+      return (g && g.days) || {};
+    }
+    return s.days || {};
+  }
+  function wsStudentDuration(workspaceId, s){
+    if(isUnitFormat(s) && s.group){
+      var g = wsGroupByName(workspaceId, s.group);
+      return (g && Number(g.duration)) || 60;
+    }
+    return Number(s.duration) || 60;
+  }
+  // How many hours of the tutor's own time a given month's payments (for one
+  // cabinet) actually cover, replaying each paying student's full payment
+  // history in order (same chain the app already uses to derive paidUntil)
+  // so each payment's date range is anchored the same way it was when it was
+  // entered — not just "this payment's span in days" on its own.
+  function cabinetTutorSplit(workspaceId, monthKey){
+    var students = state.students.filter(function(s){ return wsOf(s)===workspaceId; });
+    var allPayments = state.payments.filter(function(p){ return wsOf(p)===workspaceId; });
+    var monthPayments = allPayments.filter(function(p){ return (p.date||"").slice(0,7)===monthKey; });
+    var totalIncome = monthPayments.reduce(function(sum,p){ return sum+(Number(p.amount)||0); }, 0);
+    var hours = 0;
+    students.forEach(function(s){
+      var schedule = wsEffectiveDays(workspaceId, s);
+      var durationMin = wsStudentDuration(workspaceId, s);
+      var theirPayments = allPayments.filter(function(p){ return p.studentId===s.id; })
+        .sort(function(a,b){ return (a.date||"").localeCompare(b.date||""); });
+      var working = {startDate: s.startDate, days: s.days, format: s.format, group: s.group, paidUntil: ""};
+      theirPayments.forEach(function(p){
+        var start = billingStart(working, p.date);
+        var untilISO = computePaidUntil(working, p.date, p.span||"month");
+        if((p.date||"").slice(0,7)===monthKey){
+          var until = parseISODate(untilISO);
+          if(until){
+            var n = lessonsInRange(schedule, start, until);
+            hours += n * (durationMin/60);
+          }
+        }
+        working.paidUntil = untilISO;
+      });
+    });
+    var rate = Number((state.workspaces.find(function(w){ return w.id===workspaceId; })||{}).tutorRate) || 0;
+    var tutorPay = Math.round(hours * rate);
+    return { totalIncome: totalIncome, hours: hours, rate: rate, tutorPay: tutorPay, yourCut: totalIncome - tutorPay };
   }
   var SOURCE_OPTIONS = ["Авито", "Профи", "Сарафан", "Скидка другу", "От другого репетитора"];
 
@@ -1243,13 +1305,25 @@
     var idHint = (w && !isDefault)
       ? '<div class="hint">ID кабинета: <code style="font-family:\'IBM Plex Mono\',monospace; background:var(--surface-2); border-radius:4px; padding:1px 5px;">'+escapeHtml(w.id)+'</code> — понадобится при настройке отдельного входа для этого репетитора (см. README, раздел «Отдельный вход для репетитора»).</div>'
       : '';
-    var body = '<div class="field"><label>Название кабинета</label><input required id="ws_name" value="'+(w?escapeHtml(w.name):"")+'" placeholder="Например: Мария"></div>'+idHint;
+    // The tutor's own per-hour rate — only meaningful for an actual tutor's
+    // cabinet, never the admin's own "Основной". Used to split each
+    // payment's amount between what the tutor is owed and what you keep,
+    // the same way you already do by hand (abonement − tutor's hours × rate).
+    var rateField = isDefault ? '' :
+      '<div class="field"><label>Ставка репетитора, ₽/час</label><input id="ws_rate" type="number" min="0" step="1" value="'+(w&&w.tutorRate?w.tutorRate:"")+'" placeholder="900"></div>'+
+      '<div class="hint">Сколько репетитор получает за час занятия в этом кабинете — остальное от абонемента считается вашим доходом.</div>';
+    var body = '<div class="field"><label>Название кабинета</label><input required id="ws_name" value="'+(w?escapeHtml(w.name):"")+'" placeholder="Например: Мария"></div>'+rateField+idHint;
     openModal(w?"Кабинет: "+w.name:"Новый кабинет", body, {
       onDelete: (w && !isDefault) ? function(){ deleteWorkspace(w.id); } : null,
       onSubmit: function(){
         var name = modalBody.querySelector("#ws_name").value.trim();
         if(!name){ showModalError("Укажите название кабинета."); return; }
-        saveWorkspace({name:name}, w?w.id:null);
+        var data = {name:name};
+        if(!isDefault){
+          var rateInput = modalBody.querySelector("#ws_rate");
+          data.tutorRate = rateInput ? (Number(rateInput.value)||0) : 0;
+        }
+        saveWorkspace(data, w?w.id:null);
         modal.close();
       }
     });
@@ -1352,15 +1426,46 @@
       .reduce(function(sum,p){ return sum+(Number(p.amount)||0); },0);
     var plan = students.reduce(function(sum,s){ return sum+(Number(s.price)||0); },0);
     // Extra cabinets show the tutor's own share of the money, not the full
-    // collected amount — scaled consistently against the plan too, so the
-    // progress bar still reads as "% of this cabinet's expected take".
+    // collected amount — computed from this cabinet's own ₽/час rate against
+    // the hours its payments this month actually cover (see
+    // cabinetTutorSplit), and the plan is scaled by that same rate against a
+    // fully-booked month so the progress bar still reads sensibly.
     if(!isDefaultWs()){
-      income = Math.round(income * 0.5625);
-      plan = Math.round(plan * 0.5625);
+      var split = cabinetTutorSplit(state.currentWorkspaceId, mk);
+      income = split.tutorPay;
+      var expectedMonthlyHours = weeklyMinutes()/60*4;
+      plan = Math.round(expectedMonthlyHours * split.rate);
     }
     document.getElementById("tileIncome").textContent = fmtMoney(income);
     document.getElementById("tileIncomeFoot").textContent = "из "+fmtMoney(plan)+" плана";
     document.getElementById("incomeBar").style.width = (plan? Math.min(100, Math.round(income/plan*100)) : 0)+"%";
+
+    // Admin-only: how much of this month's income across every tutor's
+    // cabinet is actually yours after their hourly rate — a separate line,
+    // never mixed into the "Доход в этом месяце" tile above (which for the
+    // default cabinet only ever reflects your own students' payments).
+    var tutorIncomePanel = document.getElementById("tutorIncomePanel");
+    if(tutorIncomePanel){
+      var showTutorIncome = isDefaultWs() && state.isAdmin !== false;
+      tutorIncomePanel.hidden = !showTutorIncome;
+      if(showTutorIncome){
+        var extraWs = state.workspaces.filter(function(w){ return w.id!=="default"; });
+        var rows = extraWs.map(function(w){ return {w:w, split: cabinetTutorSplit(w.id, mk)}; })
+          .filter(function(r){ return r.split.totalIncome>0 || r.split.rate>0; });
+        var totalCut = rows.reduce(function(sum,r){ return sum+r.split.yourCut; },0);
+        document.getElementById("tutorIncomeTotal").textContent = fmtMoney(totalCut);
+        var list = document.getElementById("tutorIncomeList");
+        if(!rows.length){
+          list.innerHTML = '<div class="empty-note">Задайте ставку репетитора в настройках кабинета ("⚙"), чтобы увидеть разбивку.</div>';
+        } else {
+          list.innerHTML = rows.map(function(r){
+            return '<div class="lesson-row"><div style="flex:1;">'+escapeHtml(r.w.name)+
+              '<span style="color:var(--muted);"> — '+fmtMoney(r.split.totalIncome)+' собрано, репетитору '+fmtMoney(r.split.tutorPay)+' ('+r.split.rate+' ₽/ч)</span></div>'+
+              '<span class="pill good">+'+fmtMoney(r.split.yourCut)+'</span></div>';
+          }).join("");
+        }
+      }
+    }
 
     var rateStats = hourlyRateStats();
     var hourlyRateList = document.getElementById("hourlyRateList");
@@ -1598,7 +1703,9 @@
           (s.source? ' <span style="color:var(--muted);">· '+escapeHtml(s.source)+'</span>' : '')+
         '</div></div>'+
       '<div class="sched"><div class="sched-chips">'+scheduleChips(s)+'</div></div>'+
-      '<div class="pay"><span class="pill '+st.cls+'">'+st.label+'</span></div>'+
+      '<div class="pay"><span class="pill '+st.cls+'">'+st.label+'</span>'+
+        (s.paidUntil ? '<div class="paiduntil num">до '+fmtDate(s.paidUntil)+'</div>' : '')+
+      '</div>'+
       '<div class="money"><div class="price num">'+fmtMoney(s.price)+'/мес</div><div class="paid num">оплачено: '+fmtMoney(total)+'</div></div>'+
       '<div class="actions">'+
         '<button class="btn btn-sm" data-act="pay" data-id="'+s.id+'">+ Платёж</button>'+
